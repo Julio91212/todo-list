@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    margin:0;
+    min-width:950px
+}
+.content {
+    width: auto;
+    height: 960px;
+    display: grid;
+    grid-template: 10% 85% 5% / 20% 80%;
+}
+.sidebar {
+    grid-column: 1/2;
+    grid-row: 2/3;
+    background: rgb(0, 123, 255);
+    padding-left: 10px;
+    display: flex;
+    flex-direction:column;
+    min-width: 157px;
+}
+.header {
+    grid-row: 1/2;
+    grid-column: 1/3;
+    background: white;
+}
+.main{
+    background: rgb(232, 232, 232);
+    grid-column: 2/3;
+    grid-row: 2/3;
+    display: grid;
+    grid-template: 50% 50% / 70% 30%;
+}
+.footer {
+    grid-column: 1/3;
+    grid-row: 3/4;
+    background:black;
+    text-align:center;
+    color: white;
+}
+form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) scale(0);
+    border: 1px solid black;
+    border-radius: 10px;
+    z-index: 10;
+    background-color: rgb(132, 192, 129);
+    width: 500px;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;
+}
+form.taskActive, form.projectActive {
+    transform: translate(-50%,-50%) scale(1);
+}
+
+.formHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 800;
+    padding-bottom: 7px;
+}
+
+.overlay {
+    position: fixed;
+    opacity: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,.5);
+    pointer-events: none;
+}
+.overlayActive {
+    opacity: 1;
+    pointer-events: all;
+
+}
