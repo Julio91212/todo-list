@@ -1,3 +1,5 @@
+import {newTask,newProject,defaultList} from "./objects.js"
+
 function div(name) {
     let x = document.createElement("div");
     x.classList.add(name);
@@ -13,15 +15,19 @@ function button(name) {
 const layout = (() => {
     let content = div("content");   
     let sidebar = div("sidebar");
+    let tasks = div("tasks")
+    let projects = div("projects")
     let newTask = button("task")
     newTask.textContent = "+ Add Task"
-    sidebar.appendChild(newTask)
-    let projects = document.createElement("h3")
-    projects.textContent = "Projects"
-    sidebar.appendChild(projects)
-    let newProject = button("project")
+    tasks.appendChild(newTask)
+    let projectsHeader = document.createElement("h3")
+    projectsHeader.textContent = "Projects"
+    projects.appendChild(projectsHeader)
+    let newProject = button("newProject")
     newProject.textContent = "+ Add Project"
-    sidebar.appendChild(newProject)
+    projects.appendChild(newProject)
+    sidebar.appendChild(tasks)
+    sidebar.appendChild(projects)
     let header = div("header");
     let title = document.createElement("h1")
     title.textContent="Todo List"
@@ -48,11 +54,15 @@ const forms = (() => {
         let c = document.createElement("input")
         c.id = name
         c.setAttribute("type", type)
-        if (name=="submit") {c.setAttribute("value", "Submit")}
         let d = document.createElement("br")
-        parent.append(a,b,c,d)
+        if (name=="submitTask"||name=="submitProject") {
+            c.setAttribute("value", "Submit")
+            parent.append(b,c,d)}
+        else {parent.append(a,b,c,d)}
+
         return parent
     }
+    //task form
     let taskForm = document.createElement("form")
     taskForm.classList.add("task")
     let formHeader=div("formHeader")
@@ -66,9 +76,10 @@ const forms = (() => {
     formInput(formInputs,"title", "text")
     formInput(formInputs,"description", "text")
     formInput(formInputs,"due", "date")
-    formInput(formInputs,"submit", "submit")
+    formInput(formInputs,"submitTask", "submit")
     taskForm.appendChild(formHeader)
     taskForm.appendChild(formInputs)
+    //project form
     let projectForm = document.createElement("form")
     projectForm.classList.add("project")
     let projectHeader=div("formHeader")
@@ -79,8 +90,8 @@ const forms = (() => {
     projectHeader.appendChild(projectTitle)
     projectHeader.appendChild(closeButton2)
     projectForm.appendChild(projectHeader)
-    formInput(projectForm,"title","text")
-    formInput(projectForm,"submit","submit")
+    formInput(projectForm,"project","text")
+    formInput(projectForm,"submitProject","submit")
     let overlay = div("overlay")
     layout.appendChild(taskForm)
     layout.appendChild(projectForm)
@@ -89,49 +100,129 @@ const forms = (() => {
 })();
 
 const eventListeners = (() => {
+
 let task = document.querySelector("button.task")
 task.addEventListener("click", () => {
     let task = document.querySelector("form.task")
     task.classList.add("taskActive")
 })
 
-let project = document.querySelector("button.project")
+document.addEventListener("click", (e) => {
+    let elmnt = e.target
+    if (elmnt.id == "submitTask") {
+        clearOut()
+        newTask(0)
+        let i = 0
+        for (let item of defaultList.todo) {
+            console.log(item.title)
+            addTask(item.title)
+            i++
+        }
+        closeForm()
+        }
+        e.preventDefault()
+    })
+let project = document.querySelector("button.newProject")
 project.addEventListener("click", () => {
     let project = document.querySelector("form.project")
-    project.classList.add("taskActive")
+    project.classList.add("projectActive")
 })
 
-let closeBtn = document.querySelector("button.closeButton")
-closeBtn.addEventListener("click", () => {
+function closeForm() {
     let task = document.querySelector("form.taskActive")
     let project = document.querySelector("form.projectActive")
-    task.classList.add("task")
-    project.classList.add("project")
-})
+    if (project === null) {task.classList.remove("taskActive")}
+    else {project.classList.remove("projectActive")}
+}
 
-let submitTask = document.querySelector("submit")
-submitTask.addEventListener("click", (e) => {
+let closeBtn = document.querySelectorAll("button.closeButton")
+closeBtn.forEach(btn => {
+    btn.addEventListener("click", () => {
+    closeForm()
+})})
+
+let main = document.querySelector("div.main")
+
+function addTask(newTask) {
     //create new div and 2 buttons when item form is submitted 
     let item = div("item")
     //first button is complete item
     let completeBtn = button("complete")
+    //title of task
+    let title = div("taskTitle")
+    if (newTask==1) {
+    title.textContent = document.getElementById("title").value
+    } else {title.textContent = newTask}
     //second button is to change due date
     let dateBtn = button("date")
     //run new task from objects
-    newTask()
+    item.appendChild(title)
+    item.appendChild(completeBtn)
+    item.appendChild(dateBtn)
+    main.appendChild(item)
+}
+
+let submitProject = document.getElementById("submitProject")
+submitProject.addEventListener("click", (e) => {
+    clearOut()
+    //create new div when project form is submitted
+    let project = button("project")
+    project.textContent = document.getElementById("project").value
+    //button to add tasks
+    function taskButton() {
+    let taskBtn = button("projectTask")
+    main.appendChild(taskBtn)
+    taskBtn.addEventListener("click", () => {
+        submit.id = "projectTask"
+        let task = document.querySelector("form.task")
+        task.classList.add("taskActive")
+        e.preventDefault()
+    })
+    }
+    taskButton()
+    //run new project from objects
+    let projectArray = newProject()
+    let projects = document.querySelector("div.projects")
+    let submit = document.getElementById("submitTask")
+    projects.appendChild(project)
+    
+    document.addEventListener("click", (e) => {
+        let elmnt = e.target
+        if (elmnt.id == "projectTask") {
+        addTask(1)
+        let task = newTask(1)
+        projectArray.project.push(task)
+        console.table(projectArray.project)
+        submit.id = "submitTask"
+        closeForm()
+        }
+        e.preventDefault() 
+    })  
+    project.addEventListener("click", () => {
+        clearOut()
+        taskButton()
+        let i = 0
+        for (let item of projectArray.project) {
+            console.log(item.title)
+            addTask(item.title)
+            i++
+        }
+    })
     e.preventDefault()
     closeForm()
 })
 
-let submitProject = document.querySelector("submit")
-submitProject.addEventListener("click", (e) => {
-    //create new div when project form is submitted
-    let project = div("project")
-    //button to add tasks
-    let taskBtn = button("task")
-    //run new project from objects
-    newProject()
-    e.preventDefault()
-    closeForm()
-})
+function clearOut() {
+    while (main.lastChild) {
+        main.removeChild(main.lastChild)
+    }
+}
+
+function fill() {
+    // let something = Array
+    // run through array and extract title and due date for each object
+    //for each object create a div
+    //append all divs to main
+}
 })();
+

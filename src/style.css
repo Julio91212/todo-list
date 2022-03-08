@@ -79,5 +79,14 @@ form.taskActive, form.projectActive {
 .overlayActive {
     opacity: 1;
     pointer-events: all;
+}
 
+button {
+    height: 40px;
+    width: 50px;
+}
+div.project {
+    height: 40px;
+    width: 100px;
+    color: black;
 }
