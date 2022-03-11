@@ -1,4 +1,4 @@
-import {newTask,newProject,defaultList} from "./objects.js"
+import {complete,newTask,newProject,defaultList} from "./objects.js"
 
 function div(name) {
     let x = document.createElement("div");
@@ -18,7 +18,7 @@ const layout = (() => {
     let tasks = div("tasks")
     let projects = div("projects")
     let newTask = button("task")
-    newTask.textContent = "+ Add Task"
+    newTask.textContent = "+ Add Single Task"
     tasks.appendChild(newTask)
     let projectsHeader = document.createElement("h3")
     projectsHeader.textContent = "Projects"
@@ -101,10 +101,13 @@ const forms = (() => {
 
 const eventListeners = (() => {
 
+let main = document.querySelector("div.main")
 let task = document.querySelector("button.task")
 task.addEventListener("click", () => {
     let task = document.querySelector("form.task")
     task.classList.add("taskActive")
+    let overlay = document.querySelector("div.overlay")
+    overlay.classList.add("overlayActive")
 })
 
 document.addEventListener("click", (e) => {
@@ -115,7 +118,7 @@ document.addEventListener("click", (e) => {
         let i = 0
         for (let item of defaultList.todo) {
             console.log(item.title)
-            addTask(item.title)
+            addTask(item.title,0,item.id)
             i++
         }
         closeForm()
@@ -126,11 +129,15 @@ let project = document.querySelector("button.newProject")
 project.addEventListener("click", () => {
     let project = document.querySelector("form.project")
     project.classList.add("projectActive")
+    let overlay = document.querySelector("div.overlay")
+    overlay.classList.add("overlayActive")
 })
 
 function closeForm() {
     let task = document.querySelector("form.taskActive")
     let project = document.querySelector("form.projectActive")
+    let overlay = document.querySelector("div.overlay")
+    overlay.classList.remove("overlayActive")
     if (project === null) {task.classList.remove("taskActive")}
     else {project.classList.remove("projectActive")}
 }
@@ -141,13 +148,11 @@ closeBtn.forEach(btn => {
     closeForm()
 })})
 
-let main = document.querySelector("div.main")
-
-function addTask(newTask) {
+function addTask(newTask,project,id) {
     //create new div and 2 buttons when item form is submitted 
     let item = div("item")
     //first button is complete item
-    let completeBtn = button("complete")
+    let completeBtn = addComplete(project,id)
     //title of task
     let title = div("taskTitle")
     if (newTask==1) {
@@ -169,60 +174,77 @@ submitProject.addEventListener("click", (e) => {
     let project = button("project")
     project.textContent = document.getElementById("project").value
     //button to add tasks
-    function taskButton() {
-    let taskBtn = button("projectTask")
-    main.appendChild(taskBtn)
-    taskBtn.addEventListener("click", () => {
-        submit.id = "projectTask"
-        let task = document.querySelector("form.task")
-        task.classList.add("taskActive")
-        e.preventDefault()
-    })
-    }
-    taskButton()
+    taskButton(project.textContent)
     //run new project from objects
     let projectArray = newProject()
+    // let currentArray = projectArray.name
     let projects = document.querySelector("div.projects")
     let submit = document.getElementById("submitTask")
     projects.appendChild(project)
-    
+    project.addEventListener("click", (e) => {
+        clearOut()
+        taskButton(project.textContent)
+        //need to move below to objects
+        let i = 0
+        for (let item of projectArray[0].projectList) {
+            console.log(item.title)
+            addTask(item.title,projectArray.name,item.id)
+            i++
+        }
+        e.preventDefault()
+    })
     document.addEventListener("click", (e) => {
         let elmnt = e.target
         if (elmnt.id == "projectTask") {
-        addTask(1)
-        let task = newTask(1)
-        projectArray.project.push(task)
-        console.table(projectArray.project)
+        let current = document.querySelector("button.projectTask")
+        let task = newTask(current.id)
+        let id = task.id
+        addTask(1,current.id,id)
         submit.id = "submitTask"
         closeForm()
         }
         e.preventDefault() 
-    })  
-    project.addEventListener("click", () => {
-        clearOut()
-        taskButton()
-        let i = 0
-        for (let item of projectArray.project) {
-            console.log(item.title)
-            addTask(item.title)
-            i++
-        }
-    })
+    })     
     e.preventDefault()
     closeForm()
 })
 
+function taskButton(project) {
+    let taskBtn = button("projectTask")
+    taskBtn.textContent = "+ Add Task"
+    taskBtn.id = project
+    let submit = document.getElementById("submitTask")
+    main.appendChild(taskBtn)
+    taskBtn.addEventListener("click", (e) => {
+        submit.id = "projectTask"
+        let task = document.querySelector("form.task")
+        task.classList.add("taskActive")
+        e.preventDefault()
+    })}
+
+function addComplete(project,id) {
+    let completeBtn = button("complete") 
+    completeBtn.addEventListener("click", () => {
+    console.log(project)
+    console.log(id)
+    clearOut()
+    if(project !==0) {
+    taskButton(project)}
+    let array = complete(project,id)
+    let i = 0
+    for (let item of array)  {
+        console.log(item.title)
+        addTask(item.title,project,item.id)
+        i++
+    }
+    })
+    return completeBtn
+}
 function clearOut() {
     while (main.lastChild) {
         main.removeChild(main.lastChild)
     }
 }
 
-function fill() {
-    // let something = Array
-    // run through array and extract title and due date for each object
-    //for each object create a div
-    //append all divs to main
-}
 })();
 
