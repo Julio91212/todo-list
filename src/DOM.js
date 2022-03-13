@@ -1,5 +1,5 @@
-import {deleteProject,expand,complete,newTask,newProject,defaultList} from "./objects.js"
-import { compareAsc, format } from 'date-fns'
+import {findTask,deleteProject,expand,complete,newTask,newProject,defaultList} from "./objects.js"
+// import { compareAsc, format } from 'date-fns'
 
 function div(name) {
     let x = document.createElement("div");
@@ -26,13 +26,13 @@ const layout = (() => {
     projectsHeader.textContent = "Projects"
     projects.appendChild(projectsHeader)
     let newProject = button("newProject")
-    newProject.textContent = "+ Add Project"
+    newProject.textContent = "Add Project"
     projects.appendChild(newProject)
     sidebar.appendChild(tasks)
     sidebar.appendChild(projects)
     let header = div("header");
     let title = document.createElement("h1")
-    title.textContent="Todo List"
+    title.textContent="To-Do List"
     header.appendChild(title)
     let main = div("main");
     let footer = div("footer");
@@ -60,9 +60,11 @@ const forms = (() => {
         if (name=="submitTask"||name=="submitProject") {
             c.setAttribute("value", "Submit")
             parent.append(c,d)}
+        else if (name=="due") {
+            parent.append(a,b,c,d)
+            return c
+            }
         else {parent.append(a,b,c,d)}
-
-        return parent
     }
     //task form
     let taskForm = document.createElement("form")
@@ -75,8 +77,8 @@ const forms = (() => {
     formHeader.appendChild(formTitle)
     formHeader.appendChild(closeButton)
     let formInputs = div("formInputs")
-    formInput(formInputs,"title", "text")
-    formInput(formInputs,"description", "text")
+    formInput(formInputs,"title", "text",)
+    formInput(formInputs,"description", "text",)
     formInput(formInputs,"due", "date")
     formInput(formInputs,"submitTask", "submit")
     taskForm.appendChild(formHeader)
@@ -139,8 +141,9 @@ document.addEventListener("click", (e) => {
         newTask(0)
         fillDefault()
         closeForm()
-        }
         e.preventDefault()
+        }
+        
     })
 let project = document.querySelector("button.newProject")
 project.addEventListener("click", () => {
@@ -161,7 +164,8 @@ function closeForm() {
 
 let closeBtn = document.querySelectorAll("button.closeButton")
 closeBtn.forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+    e.preventDefault()
     closeForm()
 })})
 
@@ -171,7 +175,8 @@ function addTask(newTask,project,id) {
     //first button is complete item
     let completeBtn = addComplete(project,id)
     //title of task
-    let title = div("taskTitle")
+    let title = document.createElement("h3")
+    title.classList.add("taskTitle")
     if (newTask==1) {
     title.textContent = document.getElementById("title").value
     } else {title.textContent = newTask}
@@ -179,14 +184,21 @@ function addTask(newTask,project,id) {
     //run new task from objects
     item.appendChild(title)
     item.appendChild(completeBtn)
-    forms(item,"due", "date")
-
+    let task = findTask(project,id)
+    let date = task.dueDate
+    let input = forms(item,"due", "date")
+    input.value = date
+    console.log(input.value)
+    input.addEventListener("change", () => {
+        task.dueDate = input.value
+        console.log(task)
+    })
     item.addEventListener("mouseover", () => {
-        let task = expand(project,id)
-        let description = document.querySelector("div.descr")
-        if (description === null) {
+        let task = findTask(project,id)
+        let description1 = document.querySelector("div.descr")
+        if (description1 === null) {
         let descr = div("descr")
-        descr.textContent = task
+        descr.textContent = "Description: " + task.description
         item.appendChild(descr)}
         else {}
     })
@@ -224,10 +236,14 @@ function taskButton(project) {
         submit.id = "projectTask"
         let task = document.querySelector("form.task")
         task.classList.add("taskActive")
+        let overlay = document.querySelector("div.overlay")
+        overlay.classList.add("overlayActive")
     })}
 
 function addComplete(project,id) {
-    let completeBtn = button("complete") 
+    let completeBtn = document.createElement("input")
+    completeBtn.setAttribute("type", "checkbox")
+    completeBtn.classList.add("complete") 
     completeBtn.addEventListener("click", () => {
     console.log(project)
     console.log(id)
@@ -237,7 +253,7 @@ function addComplete(project,id) {
     taskButton(project)}
     else {let newTask = button("task")
     newTask.id = "task"
-    newTask.textContent = "+ Add Task"
+    newTask.textContent = "Add Task"
     main.appendChild(newTask)}
     let array = complete(project,id)
     let i = 0
@@ -274,17 +290,16 @@ function projectFill(name) {
     project.appendChild(deleteProjectBtn)
     //button to add tasks
     taskButton(projectTitle)
-    
     let projects = document.querySelector("div.projects")
     let submit = document.getElementById("submitTask")
+    let current = defaultList.defaultArray.filter(group =>
+        (group.name == projectTitle))
     projects.appendChild(project)
     project.addEventListener("click", () => {
         clearOut()
         title(projectTitle)
         taskButton(projectTitle)
         //need to move below to objects
-        let current = defaultList.defaultArray.filter(group =>
-            (group.name == projectTitle))
         let i = 0
         for (let item of current[0].projectList) {
             console.log(item.title)
@@ -301,18 +316,18 @@ function projectFill(name) {
         addTask(1,current.id,id)
         submit.id = "submitTask"
         closeForm()
+        e.preventDefault()
         }
-    }) 
+    })
+    let i = 0
+        for (let item of current[0].projectList) {
+            console.log(item.title)
+            addTask(item.title,projectTitle,item.id)
+            i++}
 }
 let data = JSON.parse(localStorage.getItem("user"))
 for (let item of data.slice(1)) {
     projectFill(item.name)
 }
 })();
-
-export {
-    eventListeners
-}
-// window.localStorage.setItem("user", JSON.stringify(eventListeners))
-// JSON.parse(window.localStorage.getItem("user"))
 

@@ -76,19 +76,19 @@ function complete(project,id) {
         }
 }
 
-function expand(project,id) {
+function findTask(project,id) {
     if (project !== 0) {
         let current = defaultList.defaultArray.filter(group =>
         (group.name == project))
         const capture = current[0].projectList.filter(item => 
         (item.id == id))
-        return capture[0].description
+        return capture[0]
     }
     else {
         let toDo = defaultList.defaultArray[0]
         const capture = toDo.filter(item => 
         (item.id == id))
-        return capture[0].description
+        return capture[0]
     }
 }
 
@@ -102,7 +102,7 @@ function deleteProject(project) {
 
 export {
     deleteProject,
-    expand,
+    findTask,
     complete,
     newTask,
     newProject, 
