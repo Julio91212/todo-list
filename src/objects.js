@@ -4,11 +4,10 @@ const defaultList = (() => {
     
     if (data === null) {
         let todo = []
-    defaultArray.push(todo)
+        defaultArray.push(todo)
         window.localStorage.setItem("user", JSON.stringify(defaultArray))
     }
     else {
-        defaultArray.pop()
         let newArray = data
         for (let item of newArray) {
             defaultArray.push(item)

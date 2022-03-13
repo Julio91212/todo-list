@@ -122,6 +122,7 @@ function fillDefault() {
         i++
     }
 }
+
 document.addEventListener("click", (e) => {
     let elmnt = e.target
     if (elmnt.classList.contains("task")) {
@@ -200,57 +201,12 @@ function addTask(newTask,project,id) {
 
 let submitProject = document.getElementById("submitProject")
 submitProject.addEventListener("click", (e) => {
-    clearOut()
-    let projectTitle = document.getElementById("project").value
-
-    title(projectTitle)
-    //create new button when project form is submitted
-    let project = button("project")
-    project.textContent = projectTitle
-    //create delete button
-    let deleteProjectBtn = button("deleteProject")
-    deleteProjectBtn.addEventListener("click", (e) => {
-        clearOut()
-        deleteProject(projectTitle)
-        projects.removeChild(project)
-        e.stopPropagation()
-    })
-    deleteProjectBtn.textContent = "x"
-    project.appendChild(deleteProjectBtn)
-    //button to add tasks
-    taskButton(projectTitle)
+    let title = document.getElementById("project").value
     //run new project from objects
-    let projectArray = newProject()
-    
-    let projects = document.querySelector("div.projects")
-    let submit = document.getElementById("submitTask")
-    projects.appendChild(project)
-    project.addEventListener("click", () => {
-        clearOut()
-        title(projectTitle)
-        taskButton(projectTitle)
-        //need to move below to objects
-        let i = 0
-        for (let item of projectArray.projectList) {
-            console.log(item.title)
-            addTask(item.title,projectArray.name,item.id)
-            i++
-        }
-    })
-    
-    document.addEventListener("click", (e) => {
-        let elmnt = e.target
-        if (elmnt.id == "projectTask") {
-        let current = document.querySelector("button.projectTask")
-        let task = newTask(current.id)
-        let id = task.id
-        addTask(1,current.id,id)
-        submit.id = "submitTask"
-        closeForm()
-        }
-    })     
-    e.preventDefault()
+    newProject()
+    projectFill(title)
     closeForm()
+    e.preventDefault()
 })
 function title(project) {
     let title = document.createElement("h1")
@@ -297,7 +253,66 @@ function clearOut() {
     while (main.lastChild) {
         main.removeChild(main.lastChild)
     }}
+
+function projectFill(name) {
+    clearOut()
+    let projectTitle = name
+
+    title(projectTitle)
+    //create new button when project form is submitted
+    let project = button("project")
+    project.textContent = projectTitle
+    //create delete button
+    let deleteProjectBtn = button("deleteProject")
+    deleteProjectBtn.addEventListener("click", (e) => {
+        clearOut()
+        deleteProject(projectTitle)
+        projects.removeChild(project)
+        e.stopPropagation()
+    })
+    deleteProjectBtn.textContent = "x"
+    project.appendChild(deleteProjectBtn)
+    //button to add tasks
+    taskButton(projectTitle)
+    
+    let projects = document.querySelector("div.projects")
+    let submit = document.getElementById("submitTask")
+    projects.appendChild(project)
+    project.addEventListener("click", () => {
+        clearOut()
+        title(projectTitle)
+        taskButton(projectTitle)
+        //need to move below to objects
+        let current = defaultList.defaultArray.filter(group =>
+            (group.name == projectTitle))
+        let i = 0
+        for (let item of current[0].projectList) {
+            console.log(item.title)
+            addTask(item.title,projectTitle,item.id)
+            i++
+        }
+    })
+    document.addEventListener("click", (e) => {
+        let elmnt = e.target
+        if (elmnt.id == "projectTask") {
+        let current = document.querySelector("button.projectTask")
+        let task = newTask(current.id)
+        let id = task.id
+        addTask(1,current.id,id)
+        submit.id = "submitTask"
+        closeForm()
+        }
+    }) 
+}
+let data = JSON.parse(localStorage.getItem("user"))
+for (let item of data.slice(1)) {
+    projectFill(item.name)
+}
 })();
+
+export {
+    eventListeners
+}
 // window.localStorage.setItem("user", JSON.stringify(eventListeners))
 // JSON.parse(window.localStorage.getItem("user"))
 
